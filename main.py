@@ -14,4 +14,17 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-print ("Hello, World!")
+import sys
+import secutiry.startup
+
+        
+
+
+
+def main() -> int:
+    secutiry.startup.set_environment_values()
+    print("Hello, World!")
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(main())

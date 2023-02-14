@@ -23,7 +23,7 @@ def set_environment_values(file_path=""):
     save_environment_values(import_environment_values(file_path))
 
 
-def save_environment_values(environment_variables_input):
+def save_environment_values(environment_variables_input: str):
     if len(environment_variables_input) == 0:
         return 0
     

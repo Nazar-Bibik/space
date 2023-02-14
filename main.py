@@ -58,7 +58,7 @@ def bind_socket(new_socket: socket.socket):
 
 def main() -> int:
 
-    secutiry.startup.set_environment_values()
+    secutiry.startup.set_environment_variables()
 
     with create_socket() as server_socket:
         server_socket.listen(0)

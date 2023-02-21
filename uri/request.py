@@ -1,4 +1,5 @@
 from secutiry.exceptions import RequestError
+from uri import Uri
 
 HTTP_METHOD_TOKENS = ["OPTIONS", "GET", "HEAD", "POST", "PUT", "DELETE", "TRACE", "CONNECT"]
 
@@ -14,8 +15,8 @@ class Request:
         if not data:
             raise RequestError()
         delimiter = bytes("\r\n", "utf-8")
-        data_header: bytes
-        data_body: bytes
+        data_header: bytes = None
+        data_body: bytes = None
         if (delimiter + delimiter) not in data:
             data_header == data
         else:
@@ -55,6 +56,10 @@ class Request:
 
         # Getting header values
         self._header = dict()
+
+
+
+    def add_header(self, raw_header: str):
         for header_line in raw_header.replace(" ", "").split("\r\n"):
             name, value = header_line.split(":", 1)
             self._header[name] = value
@@ -65,5 +70,11 @@ class Request:
         print(self._uri)
         print(self._version)
         print(self._header)
+
+
+    def append_body(self, data: bytes):
+        if not data:
+            return
+        self._body += data
 
     

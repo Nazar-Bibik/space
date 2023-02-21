@@ -17,37 +17,42 @@
 import sys
 import os
 import socket
-import errno
 import secutiry.startup
+from uri.request import Request
 
         
-def create_socket() -> socket.socket:
-    #since this is a `student project`, no need for multithreaded server 
+def _create_socket() -> socket.socket:
     try:
         new_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        #since this is a `practice project`, no need for multithreaded server 
         new_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, False)
-    except:
+    except socket.error as err:
         print("Unexpected ERROR during creation of socket object.")
-        sys.exit(1)
-    bind_socket(new_socket)
+        print(err.strerror)
+        sys.exit(err.errno)
+    _bind_socket(new_socket)
     return new_socket
 
 
-def bind_socket(new_socket: socket.socket):
+def _bind_socket(new_socket: socket.socket):
     host_address = os.environ["SPACE_IP"]
     host_port = int(os.environ["SPACE_PORT"])
-    
+
     while True:
-        if host_port >= 65536:
-            print("Could not bind any port to the socket")
-            print("List of possible port numbers exhausted. MAX=65536")
-            new_socket.close()
-            sys.exit(1)
         try:
             new_socket.bind((host_address, host_port))
             break
-        except:
-            host_port += 1
+        except OSError as err:
+            if err.errno == 10048:
+                if host_port >= 65535:
+                    print("Could not bind any port to the socket")
+                    print("List of possible port numbers exhausted. MAX=65536")
+                    new_socket.close()
+                    sys.exit(err.errno)
+                host_port += 1
+            else:
+                print(err)
+                sys.exit(err.errno)
 
     if host_port != int(os.environ["SPACE_PORT"]):
         print("Could not bind socket to .env defined port number: " + str(os.environ["SPACE_PORT"]))
@@ -55,24 +60,23 @@ def bind_socket(new_socket: socket.socket):
     print("The following port number was binded to socket: " + str(host_port))
 
 
-
 def main() -> int:
 
     secutiry.startup.set_environment_variables()
 
-    with create_socket() as server_socket:
+    with _create_socket() as server_socket:
         server_socket.listen(0)
         conn, addr = server_socket.accept()
         data = conn.recv(4096)
-        if data:
-            print(data)
-        conn.send(data)
+        request = Request(data)
+        request.print_info()
         conn.close()
         server_socket.close()
 
 
     print("Succsessful execution (hopefully)")
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main())

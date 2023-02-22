@@ -1,11 +1,12 @@
-from secutiry.exceptions import RequestError
-from uri import Uri
+from security.exceptions import RequestError
+from router.uri import Uri
 
 HTTP_METHOD_TOKENS = ["OPTIONS", "GET", "HEAD", "POST", "PUT", "DELETE", "TRACE", "CONNECT"]
 
 class Request:
+    """ This is HTTP request class """
     _method: str
-    _uri: str
+    _uri: Uri
     _version: str
     _header: dict
     _body: bytes
@@ -48,7 +49,7 @@ class Request:
             raise RequestError()
         else:
             self._method = request_method
-        self._uri =request_uri
+        self._uri = Uri(request_uri)
         if "HTTP" not in request_version:
             raise RequestError()
         else:
@@ -67,7 +68,7 @@ class Request:
     
     def print_info(self):
         print(self._method)
-        print(self._uri)
+        self._uri.print_info()
         print(self._version)
         print(self._header)
 

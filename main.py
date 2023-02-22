@@ -17,8 +17,8 @@
 import sys
 import os
 import socket
-import secutiry.startup
-from uri.request import Request
+import security.startup
+from router.request import Request
 
         
 def _create_socket() -> socket.socket:
@@ -62,7 +62,7 @@ def _bind_socket(new_socket: socket.socket):
 
 def main() -> int:
 
-    secutiry.startup.set_environment_variables()
+    security.startup.set_environment_variables()
 
     with _create_socket() as server_socket:
         server_socket.listen(0)

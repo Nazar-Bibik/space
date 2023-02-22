@@ -9,7 +9,7 @@ USER_INPUT_DECLINE = ["NO", "No", "no", "n", "N"]
     
 
 def set_environment_variables(file_path=""):
-    " Read and save env variables from file. "
+    """ Read and save env variables from file. """
     try:
         for name, value in \
             open_env_file(file_path if file_path != "" else ".env"):
@@ -32,9 +32,8 @@ def set_environment_variables(file_path=""):
         raise
         
 
-
+# generator for env file
 def open_env_file(file_path=""):
-    "generator for env file"
     with open(file_path, "r") as file:
         for line in file:
             if not line:

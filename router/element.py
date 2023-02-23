@@ -1,4 +1,3 @@
-
 class Element():
     """ 
     Web elements that make HTML page.
@@ -7,34 +6,83 @@ class Element():
     As well as permissions when requesting this element.
     """
     _path: str
-    _html: list
+    _html: str
     _css: str
     _js: str
     _media: str
-    _allow-embeded: bool
-    _children: list
+    _allow_embeded: bool
+    _children: list['Element']
 
-    def __init__(self, reference: list):
-        self._path = path()
-        self._children = None
-        for child in reference:
-            if child in children():
-                self._children.append(child)
-        self._html = html()
-        self._allow-embeded = options()
-
-    @staticmethod
-    def path() -> str:
+    def path(self) -> str:
         return
 
-    @staticmethod
-    def children() -> list:
+    def children(self) -> list['Element']:
         return
 
-    @staticmethod
-    def html() -> str:
+    def html(self) -> str:
         return
 
-    @staticmethod
-    def options() -> bool:
+    def options(self) -> bool:
         return
+
+    def __init__(self):
+        self._path = self.path()
+        self._children = list()
+        # for child in reference:
+        #     if child in self.children():
+        #         self._children.append(child)
+        self._children = list()
+        self._html = self.html()
+        self._allow_embeded = self.options()
+
+    def __iter__(cls):
+        return iter(cls.__name__)
+
+    def _server_tree(self, reference: dict) -> dict:
+        reference[self.__class__.__name__] = self
+
+        self._children = list()
+
+        if self.children():
+            for child in self.children():
+                if child.__name__ in reference:
+                    self._children.append(reference[child.__name__])
+                else:
+                    created_child = child()
+                    self._children.append(created_child)
+                    reference.update(created_child._server_tree(reference))
+        return reference
+
+    def serve(self, url: str) -> str | None:
+        if not url:
+            return None
+        
+
+
+    def assemble(self) -> str:
+        page = self._html
+        for child_element in self._children:
+            page.replace(
+                "\{element %s\}" % child_element.__class__.__name__,
+                child_element.assemble()
+                )
+        return page
+        
+
+
+"""
+from router import Element
+
+class NAME(Element):
+    def path(self) -> str:
+            return
+
+    def children(self) -> list['Element']:
+        return
+
+    def html(self) -> str:
+        return
+
+    def options(self) -> bool:
+        return
+"""

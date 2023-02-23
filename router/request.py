@@ -1,5 +1,5 @@
 from security.exceptions import RequestError
-from router.uri import Uri
+from router import Uri
 
 HTTP_METHOD_TOKENS = ["OPTIONS", "GET", "HEAD", "POST", "PUT", "DELETE", "TRACE", "CONNECT"]
 
@@ -77,5 +77,8 @@ class Request:
         if not data:
             return
         self._body += data
+
+    def method(self):
+        return self._method
 
     

@@ -18,7 +18,9 @@ import sys
 import os
 import socket
 import security.startup
-from router.request import Request
+from router import Request
+from router import ServerMap
+from router import serve
 
         
 def _create_socket() -> socket.socket:
@@ -64,13 +66,16 @@ def main() -> int:
 
     security.startup.set_environment_variables()
 
+    servermap = ServerMap()
+
     with _create_socket() as server_socket:
         server_socket.listen(0)
         while True: 
             conn, addr = server_socket.accept()
             data = conn.recv(4096)
             request = Request(data)
-            request.print_info()
+            response = serve(request, servermap)
+            conn.send()
             conn.close()
         server_socket.close()
 

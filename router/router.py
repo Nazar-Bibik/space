@@ -1,14 +1,12 @@
-from element import Element
-from router.elements import *
-from typing import Type
 
-class ServerMap(Element):
-    def __
-
-    @staticmethod
-    def _server_tree(self, node: Type[Element]) -> list:
-        branch = list(self)
-        for child in self.children():
-            branch.append(child._server_tree)
+from router import Request, Response, ServerMap
 
 
+
+
+
+
+def serve(request: Request, servermap: ServerMap):
+    if request.method() == "GET":
+        return None
+    pass

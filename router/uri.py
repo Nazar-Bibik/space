@@ -8,7 +8,7 @@ class Uri():
     _url: str
     _querry: dict
     _type: str
-    TYPE = ["HOME", "LINK", "API", "FILE"]
+    TYPES = ["HOME", "LINK", "API", "FILE"]
 
     def __init__(self, uri_stream: str):
         raw_querry = None
@@ -43,3 +43,6 @@ class Uri():
         print(self._type)
         print(self._url)
         print(self._querry)
+
+    def type(self):
+        return self._type

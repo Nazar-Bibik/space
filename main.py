@@ -18,9 +18,10 @@ import sys
 import os
 import socket
 import security.startup
+from security.manager import Manager
 from router import Request
 from router import ServerMap
-from router import serve
+import router
 
         
 def _create_socket() -> socket.socket:
@@ -69,14 +70,34 @@ def main() -> int:
     servermap = ServerMap()
 
     with _create_socket() as server_socket:
+        server_socket: socket.socket
+        # Open the Server to WWW
         server_socket.listen(0)
+
         while True: 
-            conn, addr = server_socket.accept()
-            data = conn.recv(4096)
-            request = Request(data)
-            response = serve(request, servermap)
-            conn.send()
-            conn.close()
+            connection, addr = server_socket.accept()
+            manager = Manager(addr)
+
+            with connection:
+                data = connection.recv(manager.buffer_size())
+
+                # If no data is recieved, server treats connection as a ping
+                if not data:
+                        connection.send(manager.ping_response())
+                # HTTP processing
+                while manager.keep_alive():
+                    manager.batch_size(data)
+                    request = Request(data)
+                    while manager.uncomplete_request(request):
+                        data = connection.recv(manager.buffer_size())
+                        request.add_data(data)
+                    response = router.serve(request, servermap)
+                    connection.send(response)
+                    manager.kill()
+
+                connection.close()
+
+
         server_socket.close()
 
 

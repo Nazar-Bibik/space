@@ -38,6 +38,8 @@ def open_env_file(file_path=""):
         for line in file:
             if not line:
                 continue
+            if line == "":
+                continue
             if line.startswith("#"):
                 continue
             yield line.split("=", 1)

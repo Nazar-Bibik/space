@@ -4,3 +4,6 @@ class RequestError(Exception):
 
 class RequestNotFound(Exception):
     pass
+
+class NotImplementedError(Exception):
+    pass

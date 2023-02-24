@@ -46,3 +46,6 @@ class Uri():
 
     def type(self):
         return self._type
+    
+    def url(self):
+        return self._url

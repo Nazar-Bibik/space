@@ -56,7 +56,13 @@ class Element():
     def serve(self, url: str) -> str | None:
         if not url:
             return None
-        
+        if url == self._path or url == (self._path + "/"):
+            return self.assemble()
+        url = url.replace(self._path + "/", "", 1)
+        for child in self._children:
+            if url.startswith(child.path() + "/"):
+                return child.serve(url)
+        return None
 
 
     def assemble(self) -> str:
@@ -72,10 +78,11 @@ class Element():
 
 """
 from router import Element
+from finder import html
 
 class NAME(Element):
     def path(self) -> str:
-            return
+        return
 
     def children(self) -> list['Element']:
         return

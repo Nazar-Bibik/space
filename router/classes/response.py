@@ -47,9 +47,12 @@ class Response:
             response += bytes(key + " : " + value, "utf-8")
             response += delimiter
 
+        response += delimiter
+
         if self._body:
-            response += delimiter
             response += self._body
+
+        return response
 
 
 

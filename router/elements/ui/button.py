@@ -1,15 +1,14 @@
 from router import Element
-from finder import html
 
-class Home(Element):
+class Button(Element):
     def path(self) -> str:
-        return "home"
+        return "ui_button"
 
     def children(self) -> list['Element']:
         return
 
     def html(self) -> str:
-        return html("home.html")
+        return
 
     def options(self) -> bool:
-        return True
+        return

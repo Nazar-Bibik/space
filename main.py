@@ -28,7 +28,7 @@ def _create_socket() -> socket.socket:
     try:
         new_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         #since this is a `practice project`, no need for multithreaded server 
-        new_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, False)
+        new_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, True)
     except socket.error as err:
         print("Unexpected ERROR during creation of socket object.")
         print(err.strerror)
@@ -70,33 +70,62 @@ def main() -> int:
     servermap = ServerMap()
 
     with _create_socket() as server_socket:
+        """
+            From here, work with a socket stars.
+            I am far proud from how this section is formed.
+            On one hand, I want to accept empty pings.
+            On other, it makes it a mess to split initial recv() from the rest of http1.1 connection.
+        """
         server_socket: socket.socket
         # Open the Server to WWW
         server_socket.listen(0)
 
         while True: 
             connection, addr = server_socket.accept()
-            manager = Manager(addr)
-
+            connection.settimeout(0.05)
             with connection:
-                data = connection.recv(manager.buffer_size())
+                manager = Manager(addr)
+                # Since the socket is blocking, this will check if connection was closed beforehand
+                try:
+                    data = connection.recv(manager.buffer_size())
+                except TimeoutError:
+                    manager.kill()
+                    continue
 
                 # If no data is recieved, server treats connection as a ping
                 if not data:
                         connection.send(manager.ping_response())
+
                 # HTTP processing
                 while manager.keep_alive():
-                    manager.batch_size(data)
-                    request = Request(data)
-                    while manager.uncomplete_request(request):
-                        data = connection.recv(manager.buffer_size())
-                        request.add_data(data)
-                    response = router.serve(request, servermap)
+                    # Recieve request
+                    try:
+                        request = Request(data)
+                        while manager.uncomplete_request(request):
+                            data = connection.recv(manager.buffer_size())
+                            request.add_data(data)
+                            if not data:
+                                break
+                        request.assemble()
+                        manager.verify_request(request)
+                    except Exception as err:
+                        manager.catch(err)
+                        manager.flush(connection, data)
+                        
+                    # Form response and send
+                    response = router.serve(request, servermap, manager.exception())
                     connection.send(response)
-                    manager.kill()
+
+                    if not manager.keep_alive():
+                        break
+                    try:
+                        data = connection.recv(manager.buffer_size())
+                        if not data:
+                            manager.kill()
+                    except TimeoutError:
+                        manager.kill()
 
                 connection.close()
-
 
         server_socket.close()
 

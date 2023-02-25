@@ -25,88 +25,70 @@ class Request:
         if not data:
             return
         self.add_data(data)
-        # # Verifying bytes data
-        # if not data:
-        #     raise RequestError()
-        # delimiter = bytes("\r\n", "utf-8")
-        # data_header: bytes = None
-        # data_body: bytes = None
-        # self._no_ending = False
-        # if (delimiter + delimiter) not in data:
-        #     data_header == data
-        #     self._no_ending = True
-        # else:
-        #     data_header, data_body = data.split((delimiter + delimiter), 1)
-
-        # self._body = data_body # Setting request body
-
-        # # Verifying header bytes
-        # if not data_header:
-        #     raise RequestError()
-        # if data_header.startswith(delimiter):
-        #     data_header = data_header[1:]
-        # try:
-        #     raw_request, raw_header = data_header.decode("utf-8").split("\r\n", 1)
-        # except ValueError:
-        #     raise RequestError()
-        # except:
-        #     raise
-
-        # # Getting header values
-        # self._header = dict()
-        # self.add_header(raw_header)
 
 
     def add_data(self, data: bytes):
         if not data:
-            raise RequestError
+            return
         if not self._no_ending:
             self.append_body(data)
             return
         
         delimiter = bytes("\r\n", "utf-8")
         self._buffer += data
+          
+        if (delimiter + delimiter) in self._buffer:
+            self._buffer, self._body = self._buffer.split((delimiter + delimiter), 1)
+            try:
+                self._add_request()
+            except RequestError:
+                raise
+            self._no_ending = False
+            
 
-        if self._uri is None:
+    def _add_request(self):
+        delimiter = bytes("\r\n", "utf-8")
+        try:
             if self._buffer.startswith(delimiter):
                 self._buffer.replace(delimiter, "", 1)
-            if self._buffer.find(delimiter):
-                raw_request, self._buffer = self._buffer.split(delimiter, 1)
-                self._add_request(raw_request.decode("utf-8"))
-            else:
-                return
 
-        if (delimiter + delimiter) not in self._buffer:
-            self._no_ending = True
-            return
+            raw_start_line, raw_header = self._buffer.split(delimiter, 1)
+            self._add_start_line(raw_start_line.decode("utf-8"))
+            self._add_header(raw_header.decode("utf-8"))
+            self._buffer = None   
+        except:
+            raise RequestError
 
-        data_header: bytes
-        data_header, self._body = self._buffer.split((delimiter + delimiter), 1)
-        self._no_ending = False
-        self.add_header(data_header.decode("utf-8"))
-        self._buffer = None   
-
-
-    def _add_request(self, raw_request: str):
+    def _add_start_line(self, raw_request: str):
         " Getting request values "
         try:
             request_method, request_uri, request_version = raw_request.split(" ", 3)
         except:
-            raise RequestError()
+            raise RequestError
         if request_method not in HTTP_METHOD_TOKENS:
-            raise NotImplementedError()
+            raise NotImplementedError
         else:
             self._method = request_method
         self._uri = Uri(request_uri)
         if "HTTP" not in request_version:
-            raise RequestError()
+            raise RequestError
         else:
             self._version = request_version
         
-    def add_header(self, raw_header: str):
-        for header_line in raw_header.replace(" ", "").split("\r\n"):
-            name, value = header_line.split(":", 1)
-            self._header[name] = value
+    def _add_header(self, raw_header: str):
+        try:
+            for header_line in raw_header.replace(" ", "").split("\r\n"):
+                name, value = header_line.split(":", 1)
+                self._header[name.lower()] = value
+        except:
+            raise RequestError
+
+    def assemble(self):
+        if not self._no_ending:
+            return
+        if self._buffer.endswith(bytes("\r\n", "utf-8")):
+            self._add_request()
+        raise RequestError
 
     def append_body(self, data: bytes):
         if not data:
@@ -116,7 +98,7 @@ class Request:
     def is_complete(self):
         if self._no_ending:
             return False
-        
+        return True
 
     def method(self):
         return self._method
@@ -133,7 +115,10 @@ class Request:
     def body_size(self) -> int:
         return len(self._body)
     
-    def read_header(self, name: str) -> str:
-        return self._header[name]
+    def read_header(self, name: str) -> str | None:
+        try:
+            return self._header[name]
+        except:
+            return None
 
     

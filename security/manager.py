@@ -1,6 +1,8 @@
 
 import os
-from router import Request
+import socket
+from router.classes.request import Request
+from security.exceptions import RequestError
 
 class Manager():
     """
@@ -12,8 +14,8 @@ class Manager():
     _keep_alive: bool
     _socket_buffer_size: int
     _request_size: int
-    _batch_size: int
     _retry: int
+    _error: Exception
 
     def __init__(self, client_address: tuple):
         self._host = os.environ["SPACE_IP"] + ":" + os.environ["SPACE_PORT"]
@@ -22,6 +24,7 @@ class Manager():
         self._socket_buffer_size = int(os.environ["SOCKET_BUFFER"])
         self._request_size = 0
         self._retry = int(os.environ["RETRY_INT"])
+        self._error = None
 
     def ping_response(self) -> bytes:
         "When there is a ping to server. A response is server's ip address."
@@ -41,23 +44,56 @@ class Manager():
         if self.request_expect_header(request):
             return True
         if self.request_expect_body(request):
+            if self._retry == 0:
+                raise TimeoutError
             return True
         return False
     
     def request_expect_body(self, request: Request) -> bool:
         if request.method() in ("PUT", "PATH", "DELETE", "POST"):
-            if int(request.read_header("Content-Length")) != request.body_size():
+            content_length = int(request.read_header("Content-Length"))
+            if content_length is None:
+                return False
+            if content_length < request.body_size():
                 return True
+            if content_length > request.body_size():
+                self.kill()
+                raise RequestError
         return False
         
     def request_expect_header(self, request: Request) -> bool:
-        if request._no_ending and (self._batch_size == self._socket_buffer_size):
-            return True
-        return False
+        return not request.is_complete()
 
-    def batch_size(self) -> int:
-        return self._batch_size
+    def dropped_data(self):
+        if self._retry <= 0:
+            self.kill()
+            return
+        self._retry -= 1
+
+    def flush(self, connection: socket.socket, data):
+        if self._error == TimeoutError:
+            return
+        while True:
+            if data is None:
+                return
+            try:
+                data = connection.recv(self._socket_buffer_size)
+            except TimeoutError:
+                return
     
-    def batch_size(self, data: bytes):
-        self._batch_size = len(data)
+    def catch(self, err: 'Exception'):
+        self._error = err
+        self.kill()
 
+    def exception(self) -> Exception:
+        return self._error
+    
+    def verify_request(self, request: Request):
+        keep_alive = request.read_header("connection")
+        if keep_alive == None:
+            self.kill()
+        else:
+            if keep_alive.lower() != "keep-alive":
+                self.kill()
+
+        return

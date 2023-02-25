@@ -17,7 +17,7 @@ class ServerMap(Element):
         # self._reference = self._server_tree({self.__class__.__name__: self})
         self._reference = self._server_tree(dict())
         self._not_found = NotFound()
-        print("Done!")
+        print("ServerMap complete!")
 
     def children(self) -> list:
         return (

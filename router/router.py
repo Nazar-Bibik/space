@@ -5,7 +5,7 @@ from finder import file
 IMPLEMENTED_HTTP_METHODS = ["OPTIONS", "GET", "PUT", "POST", "HEAD"]
 
 
-def serve(request: Request, servermap: ServerMap) -> bytes:
+def serve(request: Request, servermap: ServerMap, err: Exception) -> bytes:
     response: Response
 
     if request.method() == "GET":
@@ -25,5 +25,12 @@ def serve(request: Request, servermap: ServerMap) -> bytes:
             response.append_body(content) 
 
     return response.serve() 
+
+def resource_info(request: Request, servermap: ServerMap):
+    if request.resource("LINK"):
+        return 
+
+def serve_404() -> Response:
+    pass
 
 # def response_options():

@@ -99,8 +99,8 @@ def main() -> int:
                 # HTTP processing
                 while manager.keep_alive():
                     # Recieve request
+                    request = Request(data)
                     try:
-                        request = Request(data)
                         while manager.uncomplete_request(request):
                             data = connection.recv(manager.buffer_size())
                             request.add_data(data)

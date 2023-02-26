@@ -1,9 +1,30 @@
 class RequestError(Exception):
-    pass
+    http_code = "400"
+    http_message = "Bad Request"
 
 
 class RequestNotFound(Exception):
-    pass
+    http_code = "404"
+    http_message = "Not Found"
+
 
 class NotImplementedError(Exception):
-    pass
+    http_code = "501"
+    http_message = "Not Implemented"
+
+
+class InternalError(Exception):
+    http_code = "500"
+    http_message = "Internal Server Error"
+
+
+class UnauthorisedError(Exception):
+    http_code = "401"
+    http_message = "Unauthorized"
+
+        
+class ConnectionTimeOut(Exception):
+    http_code = "408"
+    http_message = "Request Timeout"
+
+HTTP_EXCEPTION_ARRAY = (RequestError, RequestNotFound, NotImplementedError, InternalError, UnauthorisedError)

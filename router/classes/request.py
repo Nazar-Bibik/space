@@ -1,3 +1,5 @@
+# Copyright (C) 2023  Nazar Bibik
+
 from security.exceptions import RequestError, NotImplementedError
 from router import Uri
 
@@ -100,7 +102,7 @@ class Request:
             return False
         return True
 
-    def method(self):
+    def method(self) -> str:
         return self._method
 
     def url(self):
@@ -121,4 +123,6 @@ class Request:
         except:
             return None
 
+    def version(self) -> str:
+        return self._version if self._version else "HTTP/1.1"
     

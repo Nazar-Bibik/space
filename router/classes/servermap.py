@@ -1,3 +1,5 @@
+# Copyright (C) 2023  Nazar Bibik
+
 from router.classes.element import Element
 from router.elements.home import *
 from router.elements.stars import *
@@ -30,7 +32,7 @@ class ServerMap(Element):
     def serve(self, url: str) -> str | None:
         content: str
         if url == "/":
-            content = self.serve("home")
+            return self.serve("home")
         else:
             if not url.startswith("/"):
                 url = "/" + url
@@ -39,9 +41,7 @@ class ServerMap(Element):
             content = super().serve(url)
         if content is None:
             return None
-        content = self._html.replace("{servermap}", content)
-        return content
-    
-    def serve_404(self) -> str:
-        content = self._not_found.assemble()
-        return content
+        # Remove after debugging html
+        return index().replace("{servermap}", content)
+        # content = self._html.replace("{servermap}", content)
+        # return content

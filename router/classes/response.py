@@ -1,4 +1,4 @@
-
+# Copyright (C) 2023  Nazar Bibik
 
 HTTP_RESPONSE_TOKENS = ["a lot..."]
 

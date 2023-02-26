@@ -1,3 +1,5 @@
+# Copyright (C) 2023  Nazar Bibik
+
 from security.exceptions import RequestNotFound
 from security.exceptions import RequestError
 from urllib import parse
@@ -8,7 +10,7 @@ class Uri():
     _url: str
     _querry: dict
     _type: str
-    TYPES = ["HOME", "LINK", "API", "FILE"]
+    TYPES = ["LINK", "API", "FILE"]
 
     def __init__(self, uri_stream: str):
         raw_querry = None
@@ -17,9 +19,7 @@ class Uri():
         else:
             self._url, raw_querry = uri_stream.split("?", 1)
 
-        if "/" == self._url:
-            self._type = "HOME"
-        elif self._url.startswith("/api/"):
+        if self._url.startswith("/api/"):
             self._type = "API"
         elif self._url.startswith("/file/"):
             self._type = "FILE"

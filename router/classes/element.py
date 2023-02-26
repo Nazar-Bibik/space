@@ -1,3 +1,5 @@
+# Copyright (C) 2023  Nazar Bibik
+
 class Element():
     """ 
     Web elements that make HTML page.

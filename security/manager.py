@@ -1,3 +1,4 @@
+# Copyright (C) 2023  Nazar Bibik
 
 import os
 import socket

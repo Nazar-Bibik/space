@@ -14,12 +14,34 @@ IMPLEMENTED_HTTP_METHODS = ["OPTIONS", "GET", "PUT", "POST", "HEAD"]
 
 def _serve_error(err: Exception, method: str) -> Response:
     if err == TimeoutError:
-        return Response(exceptions.ConnectionTimeOut.http_code, exceptions.ConnectionTimeOut.http_message, method)
+        return _serve_error(exceptions.ConnectionTimeOut, method)
     
     if err in exceptions.HTTP_EXCEPTION_ARRAY:
         return Response(err.http_code, err.http_message, method)
     
     return _serve_error(exceptions.InternalError, method)
+
+
+def _serve_file(request: Request) -> Response:
+    content = file(request.url())
+    if content is None:
+        return _serve_error(exceptions.RequestNotFound, request.version())
+    response = Response("200", "OK", "HTTP/1.0")
+    response.append_body(content) 
+    return response
+
+
+def _serve_link(request: Request, servermap: ServerMap, charset: str) -> Response:
+    response: Request
+    content = servermap.serve(request.url())
+    if content is None:
+        response = _serve_error(exceptions.RequestNotFound, request.version())
+        response.append_body(bytes(servermap.serve("/404/"), charset))
+    else:
+        response = Response("200", "OK", "HTTP/1.0")
+        response.append_body(bytes(content, charset)) 
+    return response
+
 
 def serve(request: Request, servermap: ServerMap, err: Exception) -> bytes:
     response: Response
@@ -33,20 +55,13 @@ def serve(request: Request, servermap: ServerMap, err: Exception) -> bytes:
 
     if request.method() == "GET":
 
-        if request.resource("LINK") or request.resource("HOME"):
-            content = servermap.serve(request.url())
-            if not content:
-                return serve(request, servermap, exceptions.RequestNotFound)
-            else:
-                response = Response("200", "OK", "HTTP/1.0")
-            response.append_body(bytes(content, charset))   
+        if request.resource("LINK"):
+            return _serve_link(request, servermap, charset).serve()
         
         if request.resource("FILE"):
-            response = Response("200", "OK", "HTTP/1.0")
-            content = file(request.url())
-            response.append_body(content) 
+            return _serve_file(request).serve()
 
-    return response.serve() 
+    return _serve_error(exceptions.NotImplementedError, request.method()).serve() 
 
 
 

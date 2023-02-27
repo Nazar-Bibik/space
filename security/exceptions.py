@@ -27,4 +27,5 @@ class ConnectionTimeOut(Exception):
     http_code = "408"
     http_message = "Request Timeout"
 
-HTTP_EXCEPTION_ARRAY = (RequestError, RequestNotFound, NotImplementedError, InternalError, UnauthorisedError)
+
+HTTP_EXCEPTION_ARRAY = (RequestError, RequestNotFound, NotImplementedError, InternalError, UnauthorisedError, ConnectionTimeOut)

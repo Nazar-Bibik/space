@@ -21,7 +21,9 @@ class Uri():
 
         if self._url.startswith("/api/"):
             self._type = "API"
-        elif self._url.startswith("/file/"):
+        elif self._url.startswith((
+            "/file/", "/img/", "/css/", "/html", 
+        )):
             self._type = "FILE"
         else:
             self._type = "LINK"

@@ -1,8 +1,8 @@
 import os
 
 def file(path: str) -> str:
-    if not path.startswith(("file/", "/file/")):
-        path += "file/"
+    if path.startswith("/"):
+        path = path.replace("/", "", 1)
     with open("finder/" + path, "rb") as file:
         return file.read()
 

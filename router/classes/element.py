@@ -1,5 +1,7 @@
 # Copyright (C) 2023  Nazar Bibik
 
+import finder
+
 class Element():
     """ 
     Web elements that make HTML page.
@@ -68,7 +70,7 @@ class Element():
 
 
     def assemble(self) -> str:
-        page = self._html
+        page = finder.html(self._html)
         for child_element in self._children:
             page.replace(
                 "\{element %s\}" % child_element.__class__.__name__,
@@ -91,6 +93,9 @@ class NAME(Element):
 
     def html(self) -> str:
         return
+
+    def css(self) -> str:
+        return "[]"
 
     def options(self) -> bool:
         return

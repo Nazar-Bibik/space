@@ -9,7 +9,7 @@ class Home(Element):
         return
 
     def html(self) -> str:
-        return html("home.html")
+        return "home.html"
 
     def options(self) -> bool:
         return True

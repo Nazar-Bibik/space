@@ -78,7 +78,7 @@ def main() -> int:
         """
         server_socket: socket.socket
         # Open the Server to WWW
-        server_socket.listen(0)
+        server_socket.listen(5)
 
         while True: 
             connection, addr = server_socket.accept()
@@ -110,6 +110,7 @@ def main() -> int:
                         manager.verify_request(request)
                     except Exception as err:
                         manager.catch(err)
+                        print(err)
                         manager.flush(connection, data)
                         
                     # Form response and send
@@ -122,7 +123,7 @@ def main() -> int:
                         data = connection.recv(manager.buffer_size())
                         if not data:
                             manager.kill()
-                    except TimeoutError:
+                    except:
                         manager.kill()
 
                 connection.close()

@@ -9,7 +9,7 @@ class NotFound(Element):
         return
 
     def html(self) -> str:
-        return html("404.html")
+        return "404.html"
 
     def options(self) -> bool:
         return True

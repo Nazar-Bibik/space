@@ -9,7 +9,7 @@ class Contact(Element):
         return
 
     def html(self) -> str:
-        return html("contact.html")
+        return "contact.html"
 
     def options(self) -> bool:
         return

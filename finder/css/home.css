@@ -1,0 +1,22 @@
+.style-header-text {
+    background-color: rgb(31, 59, 59);
+    height: 125px;
+}
+
+.style-content {
+    background-color: rgb(80, 18, 18);
+    flex: 1;
+}
+
+.style-navigation {
+    background-color: rgb(61, 57, 52);
+    height: 125px;
+}
+
+.element-home {
+    display: flex;
+    height: 100%;
+    width: 100%;
+    flex: 1;
+    flex-direction: column;
+}

@@ -5,7 +5,7 @@ from router.elements.home import *
 from router.elements.stars import *
 from router.elements.contact import *
 from router.elements.notfound import *
-from finder import index
+import finder
 
 class ServerMap(Element):
     _reference: dict['Element']
@@ -13,7 +13,7 @@ class ServerMap(Element):
 
     def __init__(self):
         self._path = ""
-        self._html = index()
+        self._html = finder.index()
         self._allow_embeded = False
         self._children = list()
         # self._reference = self._server_tree({self.__class__.__name__: self})
@@ -42,6 +42,6 @@ class ServerMap(Element):
         if content is None:
             return None
         # Remove after debugging html
-        return index().replace("{servermap}", content)
+        return finder.index().replace("{servermap}", content)
         # content = self._html.replace("{servermap}", content)
         # return content

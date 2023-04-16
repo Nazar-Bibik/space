@@ -1,16 +1,18 @@
 from router import Element
 from finder import html
-from router.elements.planet.planet import Planet
 
-class Home(Element):
+class Planet(Element):
     def path(self) -> str:
-        return "home"
+        return "planet"
 
     def children(self) -> list['Element']:
-        return [Planet]
+        return
 
     def html(self) -> str:
-        return "home.html"
+        return "/planet/planet.html"
+
+    def css(self) -> str:
+        return "[]"
 
     def options(self) -> bool:
-        return True
+        return

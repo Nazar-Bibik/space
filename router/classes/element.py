@@ -9,6 +9,7 @@ class Element():
     It also states what is requierd from client to recieve this element.
     As well as permissions when requesting this element.
     """
+    _name: str
     _path: str
     _html: str
     _css: str
@@ -31,10 +32,6 @@ class Element():
 
     def __init__(self):
         self._path = self.path()
-        self._children = list()
-        # for child in reference:
-        #     if child in self.children():
-        #         self._children.append(child)
         self._children = list()
         self._html = self.html()
         self._allow_embeded = self.options()
@@ -69,18 +66,21 @@ class Element():
         return None
 
 
-    def assemble(self) -> str:
+    def assemble(self, data: dict = None) -> str:
         page = finder.html(self._html)
+        if data:
+            for name, value in data.items():
+                page = page.replace("{data " + str(name) + "}", value)
         for child_element in self._children:
-            page.replace(
-                "\{element %s\}" % child_element.__class__.__name__,
-                child_element.assemble()
-                )
+            page = page.replace("{element " + str(child_element.__class__.__name__) + "}", child_element.assemble())
         return page
         
 
 
 """
+A template for element class inherit:
+
+
 from router import Element
 from finder import html
 

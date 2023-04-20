@@ -1,33 +1,43 @@
 # Copyright (C) 2023  Nazar Bibik
 
 from router.classes.element import Element
-from router.elements.home import *
-from router.elements.stars import *
-from router.elements.contact import *
-from router.elements.notfound import *
+import router.elements.home as home
+import router.elements.stars as stars
+import router.elements.contact as contact
+import router.elements.notfound as notfound
 import finder
 
 class ServerMap(Element):
     _reference: dict['Element']
-    _not_found: Element
+
 
     def __init__(self):
         self._path = ""
         self._html = finder.index()
-        self._allow_embeded = False
-        self._children = list()
-        # self._reference = self._server_tree({self.__class__.__name__: self})
-        self._reference = self._server_tree(dict())
-        self._not_found = NotFound()
+        self._is_embeded = False
+        self._children = self.children()
+        self._reference = self._server_tree()
         print("ServerMap complete!")
 
-    def children(self) -> list:
+    def children(self) -> set:
         return (
-            Home,
-            Stars,
-            Contact,
-            NotFound,
+            home.init,
+            stars.init,
+            contact.init,
+            notfound.init,
         )
+    
+    def _server_tree(self) -> dict:
+        reference = dict()
+
+        children = self._children
+        self._children = set()
+
+        for child in children:
+            created_child = child()
+            self._children.add(created_child)
+            reference.update(created_child._server_tree(reference))
+        return reference
         
     def serve(self, url: str) -> str | None:
         content: str
@@ -41,7 +51,6 @@ class ServerMap(Element):
             content = super().serve(url)
         if content is None:
             return None
-        # Remove after debugging html
-        return finder.index().replace("{servermap}", content)
-        # content = self._html.replace("{servermap}", content)
-        # return content
+
+        return self._html.replace("{servermap}", content)
+

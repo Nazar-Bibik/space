@@ -1,6 +1,7 @@
 # Copyright (C) 2023  Nazar Bibik
 
 import finder
+from security.exceptions import InternalError
 
 class Element():
     """ 
@@ -11,48 +12,50 @@ class Element():
     """
     _name: str
     _path: str
+    _is_embeded: bool
     _html: str
-    _css: str
-    _js: str
-    _media: str
-    _allow_embeded: bool
-    _children: list['Element']
+    _css: set[str]
+    _js: set[str]
+    _children: set['Element']
 
-    def path(self) -> str:
-        return
 
-    def children(self) -> list['Element']:
-        return
+    def __init__(self, name: str, path: str, is_embeded: bool, html: str, css: set[str] = None, js: set[str] = None, children: set['function'] = None):
+        self._name = name
+        self._path = path
+        self._is_embeded = is_embeded
+        self._html = html
+        self._css = css
+        self._js = js
+        self._children = children
 
-    def html(self) -> str:
-        return
-
-    def options(self) -> bool:
-        return
-
-    def __init__(self):
-        self._path = self.path()
-        self._children = list()
-        self._html = self.html()
-        self._allow_embeded = self.options()
 
     def __iter__(cls):
-        return iter(cls.__name__)
+        return iter(cls._name)
+    
 
     def _server_tree(self, reference: dict) -> dict:
-        reference[self.__class__.__name__] = self
+        reference[self._name] = self
 
-        self._children = list()
+        children = self._children
+        self._children = set()
 
-        if self.children():
-            for child in self.children():
-                if child.__name__ in reference:
-                    self._children.append(reference[child.__name__])
+        if children:
+            for child in children:
+                if self._name == child("name"):
+                    raise InternalError()
+                if child("name") in reference:
+                    self._children.add(reference[child("name")])
                 else:
                     created_child = child()
-                    self._children.append(created_child)
+                    self._children.add(created_child)
                     reference.update(created_child._server_tree(reference))
         return reference
+    
+    def path(self) -> str:
+        return self._path
+    
+    def name(self) -> str:
+        return self._name
 
     def serve(self, url: str) -> str | None:
         if not url:
@@ -72,31 +75,31 @@ class Element():
             for name, value in data.items():
                 page = page.replace("{data " + str(name) + "}", value)
         for child_element in self._children:
-            page = page.replace("{element " + str(child_element.__class__.__name__) + "}", child_element.assemble())
+            page = page.replace("{element " + str(child_element.name()) + "}", child_element.assemble())
         return page
         
 
 
 """
-A template for element class inherit:
+A template for element class :
 
 
 from router import Element
-from finder import html
 
-class NAME(Element):
-    def path(self) -> str:
-        return
+def init(get: str = None):
+    name = ""
+    path = ""
+    is_embeded = True
+    html = ""
+    css = {}
+    js = {}
+    children = {}
 
-    def children(self) -> list['Element']:
-        return
+    if get == "name":
+        return name
 
-    def html(self) -> str:
-        return
-
-    def css(self) -> str:
-        return "[]"
-
-    def options(self) -> bool:
-        return
+    return Element(name, path, is_embeded, html,\
+                    None if css == {} else css, None if js == {} else js, None if children == {} else children)
 """
+
+

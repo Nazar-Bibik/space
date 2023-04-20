@@ -23,9 +23,13 @@ def _serve_error(err: Exception, method: str) -> Response:
 
 
 def _serve_file(request: Request) -> Response:
-    content = file(request.url())
-    if content is None:
+    try:
+        content = file(request.url())
+    except FileNotFoundError:
         return _serve_error(exceptions.RequestNotFound, request.version())
+    except OSError:
+        print(OSError)
+        return _serve_error(exceptions.InternalError, request.version())
     response = Response("200", "OK", "HTTP/1.0")
     response.append_body(content) 
     return response

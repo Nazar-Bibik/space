@@ -19,9 +19,9 @@ import os
 import socket
 import security.startup
 from security.manager import Manager
-from router import Request
-from router import ServerMap
-import router
+from server import Request
+from server import ServerMap
+import server
 
         
 def _create_socket() -> socket.socket:
@@ -70,16 +70,12 @@ def main() -> int:
     servermap = ServerMap()
 
     with _create_socket() as server_socket:
-        """
-            From here, work with a socket stars.
-            I am far proud from how this section is formed.
-            On one hand, I want to accept empty pings.
-            On other, it makes it a mess to split initial recv() from the rest of http1.1 connection.
-        """
+
         server_socket: socket.socket
-        # Open the Server to WWW
+        # Open the Server to network
         server_socket.listen(5)
 
+        #Accept connection, recieve data and server response in a loop
         while True: 
             connection, addr = server_socket.accept()
             connection.settimeout(0.05)
@@ -91,10 +87,6 @@ def main() -> int:
                 except TimeoutError:
                     manager.kill()
                     continue
-
-                # If no data is recieved, server treats connection as a ping
-                if not data:
-                        connection.send(manager.ping_response())
 
                 # HTTP processing
                 while manager.keep_alive():
@@ -114,7 +106,7 @@ def main() -> int:
                         manager.flush(connection, data)
                         
                     # Form response and send
-                    response = router.serve(request, servermap, manager.exception())
+                    response = server.serve(request, servermap, manager.exception())
                     connection.send(response)
 
                     if not manager.keep_alive():
@@ -131,7 +123,7 @@ def main() -> int:
         server_socket.close()
 
 
-    print("Succsessful execution (hopefully)")
+    print("Succsessful execution")
     return 0
 
 

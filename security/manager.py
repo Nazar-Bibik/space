@@ -2,7 +2,7 @@
 
 import os
 import socket
-from router.classes.request import Request
+from server.classes.request import Request
 from security.exceptions import RequestError
 
 class Manager():
@@ -26,11 +26,6 @@ class Manager():
         self._request_size = 0
         self._retry = int(os.environ["RETRY_INT"])
         self._error = None
-
-    def ping_response(self) -> bytes:
-        "When there is a ping to server. A response is server's ip address."
-        self.kill()
-        return self._host.encode("ascii")
     
     def keep_alive(self) -> bool:
         return self._keep_alive

@@ -9,19 +9,20 @@ body {
     color: #ffffff;
     padding: 0;
     margin: 0;
+    height: 100%;
+    width: 100%;
 }
-
-text { color: #fff; }
 
 nav {
     height: 125px;
     min-height: 125px;
+    background-color: hotpink;
 }
 
 header {
     display: flex;
     background-color: rgb(31, 59, 59);
-    height: 150px;
+    height: 125px;
     padding-top: 50px;
     align-items: center;
     justify-content: center;
@@ -36,9 +37,9 @@ header h1 {
 }
 
 .content {
+    display: flex;
     background-color: rgb(80, 18, 18);
     flex: 1;
-    display: flex;
     opacity: 0.5;
 }
 
@@ -46,24 +47,19 @@ header h1 {
     display: flex;
     height: 100%;
     width: 100%;
-    flex: 1;
     flex-direction: column;
+    max-height: 100%;
+    min-height: 100%;
 }
+
+.image-single {
+    width: 50%;
+    height: 50%;
+    flex: 1;
+}
+
 
 #text {
     background: #1f706c;
     flex: 1;
-}
-
-.right-float-square {
-    float: right;
-    height: 100%;
-    max-height: 100%;
-    padding: 0;
-    margin: 0;
-    margin-left: auto;
-}
-
-img {
-    max-height: 100%;
 }

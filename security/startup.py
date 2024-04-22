@@ -1,6 +1,8 @@
 # Copyright (C) 2023  Nazar Bibik
 
 import os
+import threading
+import socket
 
 
 USER_INPUT_AGREE = ["YES", "Yes", "yes", "y", "Y"]
@@ -43,3 +45,23 @@ def open_env_file(file_path=""):
             if line.startswith("#"):
                 continue
             yield line.split("=", 1)
+
+
+class InputThread(threading.Thread):
+    def __init__(self, socket: socket.socket) -> None:
+        super().__init__(daemon = True)
+        self._userInput = ""
+        self._socket_reference = socket
+
+    def run(self) -> None:
+        while True:
+            self._userInput = input("Provide command: ").lower()
+            if self._userInput == "exit":
+                # self._socket_reference.shutdown(socket.SHUT_WR)
+                break
+
+    def userinput(self) -> str:
+        return self._userInput
+    
+    def keep_alive(self) -> bool:
+        return self._userInput != "exit"

@@ -18,14 +18,16 @@ import sys
 import os
 import socket
 import security.startup
-from router.request import Request
+from security.manager import Manager
+from server import Request
+from server import ServerMap
+import server
 
         
 def _create_socket() -> socket.socket:
     try:
         new_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        #since this is a `practice project`, no need for multithreaded server 
-        new_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, False)
+        new_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, True)
     except socket.error as err:
         print("Unexpected ERROR during creation of socket object.")
         print(err.strerror)
@@ -64,18 +66,53 @@ def main() -> int:
 
     security.startup.set_environment_variables()
 
+    servermap = ServerMap()
+
     with _create_socket() as server_socket:
-        server_socket.listen(0)
-        while True: 
-            conn, addr = server_socket.accept()
-            data = conn.recv(4096)
-            request = Request(data)
-            request.print_info()
-            conn.close()
+
+        # Open the Server to network
+        server_socket.listen(5)
+
+        # Make a user input thread
+        inputThread = security.startup.InputThread(server_socket)
+        inputThread.start()
+
+        # Accept connection, recieve data and server response in a loop until user input
+        while inputThread.keep_alive():
+            
+            connection, addr = server_socket.accept()
+            # connection.settimeout(2)
+            with connection:
+                manager = Manager(addr)
+
+                # HTTP processing
+                while manager.keep_alive():
+                    #create request object
+                    request = Request()
+                    try:
+                        while manager.uncomplete_request(request):
+                            data = connection.recv(manager.buffer_size())
+                            if not data:
+                                break
+                            request.add_data(data)                        
+                        request.assemble()
+                        manager.verify_request(request)
+                    except Exception as err:
+                        manager.catch(err)
+                        print(err)
+                        manager.flush(connection, data)
+                        
+                    # Form response and send
+                    response = server.serve(request, servermap, manager.exception())
+
+                    print(connection.send(response))
+                    # manager.kill()
+
+                connection.close()
+
         server_socket.close()
 
-
-    print("Succsessful execution (hopefully)")
+    print("Successful execution")
     return 0
 
 

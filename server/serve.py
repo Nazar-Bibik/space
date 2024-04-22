@@ -30,24 +30,26 @@ def _serve_file(request: Request) -> Response:
     except OSError:
         print(OSError)
         return _serve_error(exceptions.InternalError, request.version())
-    response = Response("200", "OK", "HTTP/1.0")
+    response = Response("200", "OK", "HTTP/1.1")
     response.append_body(content) 
+    response.add_header("Connection", "keep-alive")
     return response
 
 
 def _serve_link(request: Request, servermap: ServerMap, charset: str) -> Response:
-    response: Request
+    response: Response
     content = servermap.serve(request.url())
     if content is None:
         response = _serve_error(exceptions.RequestNotFound, request.version())
         response.append_body(bytes(servermap.serve("/404/"), charset))
     else:
-        response = Response("200", "OK", "HTTP/1.0")
+        response = Response("200", "OK", "HTTP/1.1")
         response.append_body(bytes(content, charset)) 
+    response.add_header("Connection", "keep-alive")
     return response
 
 
-def serve(request: Request, servermap: ServerMap, err: Exception) -> bytes:
+def serve(request: Request, servermap: ServerMap, err: Exception = None) -> bytes:
     response: Response
     charset = n if (n:= request.read_header("charset")) else "utf-8"
 
@@ -55,6 +57,7 @@ def serve(request: Request, servermap: ServerMap, err: Exception) -> bytes:
         response = _serve_error(err, request.version())
         if err == exceptions.RequestNotFound:
             response.append_body(bytes(servermap.serve("/404/"), charset))
+        response.add_header("Connection", "close")
         return response.serve()
 
     if request.method() == "GET":

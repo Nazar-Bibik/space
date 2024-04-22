@@ -28,4 +28,9 @@ class ConnectionTimeOut(Exception):
     http_message = "Request Timeout"
 
 
+class TooLargeError(Exception):
+    http_code = "413"
+    http_message = "Entity Too Large"
+
+
 HTTP_EXCEPTION_ARRAY = (RequestError, RequestNotFound, NotImplementedError, InternalError, UnauthorisedError, ConnectionTimeOut)

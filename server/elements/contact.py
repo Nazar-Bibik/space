@@ -1,20 +1,6 @@
 from server import Element
 
 
-class Contact(Element):
-    def path(self) -> str:
-        return "contact"
-
-    def children(self) -> list['Element']:
-        return
-
-    def html(self) -> str:
-        return "contact.html"
-
-    def options(self) -> bool:
-        return
-    
-
 def init(get: str = None):
     name = "contact"
     path = "contact"

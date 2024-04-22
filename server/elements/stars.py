@@ -1,20 +1,6 @@
 from server import Element
 
 
-# class Stars(Element):
-#     def path(self) -> str:
-#         return "stars"
-
-#     def children(self) -> list['Element']:
-#         return
-
-#     def html(self) -> str:
-#         return "stars.html"
-
-#     def options(self) -> bool:
-#         return True
-    
-
 def init(get: str = None):
     name = "stars"
     path = "stars"

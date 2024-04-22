@@ -36,6 +36,7 @@ class Manager():
     def buffer_size(self) -> int:
         return self._socket_buffer_size
     
+    # Check if a header or body is incomplete
     def uncomplete_request(self, request: Request) -> bool:
         if self.request_expect_header(request):
             return True
@@ -47,12 +48,12 @@ class Manager():
     
     def request_expect_body(self, request: Request) -> bool:
         if request.method() in ("PUT", "PATH", "DELETE", "POST"):
-            content_length = int(request.read_header("Content-Length"))
+            content_length = request.read_header("Content-Length")
             if content_length is None:
                 return False
-            if content_length < request.body_size():
+            if int(content_length) < request.body_size():
                 return True
-            if content_length > request.body_size():
+            if int(content_length) > request.body_size():
                 self.kill()
                 raise RequestError
         return False
@@ -91,5 +92,5 @@ class Manager():
         else:
             if keep_alive.lower() != "keep-alive":
                 self.kill()
-
+        self._error = None
         return

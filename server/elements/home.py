@@ -1,19 +1,6 @@
 from server import Element
 from finder import html
 import server.elements.planet.planet as planet
-
-class Home(Element):
-    def path(self) -> str:
-        return "home"
-
-    def children(self) -> list['Element']:
-        return [Planet]
-
-    def html(self) -> str:
-        return "home.html"
-
-    def options(self) -> bool:
-        return True
     
 
 def init(get: str = None):

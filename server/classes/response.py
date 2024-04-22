@@ -1,5 +1,7 @@
 # Copyright (C) 2023  Nazar Bibik
 
+import sys
+
 HTTP_RESPONSE_TOKENS = ["a lot..."]
 
 class Response:
@@ -20,7 +22,9 @@ class Response:
 
 
     def add_header(self, header_name, header_value):
-        self._header[header_name] = header_value
+        if header_name in self._header:
+            raise Exception("Attempt to override existing header")
+        self._header[header_name] = str(header_value)
 
     
     def print_info(self):
@@ -42,6 +46,10 @@ class Response:
         status_line = self._version + " " + self._code + " " + self._message
         response += bytes(status_line, "utf-8")
         response += delimiter
+
+        if self._body:
+            # get size of a body to send
+            self.add_header("Content-Length", len(self._body))
 
         for key, value in self._header.items():
             response += bytes(key + " : " + value, "utf-8")

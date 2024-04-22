@@ -1,6 +1,8 @@
 # Copyright (C) 2023  Nazar Bibik
 
-from security.exceptions import RequestError, NotImplementedError
+import sys
+import os
+from security.exceptions import RequestError, NotImplementedError, TooLargeError, ConnectionTimeOut
 from server import Uri
 
 HTTP_METHOD_TOKENS = ["OPTIONS", "GET", "HEAD", "POST", "PUT", "DELETE", "TRACE", "CONNECT"]
@@ -14,9 +16,10 @@ class Request:
     _body: bytes
     _no_ending: bool
     _buffer: bytes
+    _delimiter: bytes
+    _size_limit: int
 
-
-    def __init__(self, data: bytes):
+    def __init__(self, data: bytes = None):
         self._method = None
         self._uri = None
         self._version = None
@@ -24,6 +27,9 @@ class Request:
         self._body = bytes("", "utf-8")
         self._no_ending = True
         self._buffer = bytes("", "utf-8")
+        self._delimiter = bytes("\r\n", "utf-8")
+        self._size_limit = int(os.environ["BUFFER_LIMIT"])
+
         if not data:
             return
         self.add_data(data)
@@ -33,14 +39,14 @@ class Request:
         if not data:
             return
         if not self._no_ending:
-            self.append_body(data)
+            self._append_body(data)
             return
         
-        delimiter = bytes("\r\n", "utf-8")
         self._buffer += data
+        self._buffer_limit()
           
-        if (delimiter + delimiter) in self._buffer:
-            self._buffer, self._body = self._buffer.split((delimiter + delimiter), 1)
+        if (self._delimiter + self._delimiter) in self._buffer:
+            self._buffer, self._body = self._buffer.split((self._delimiter + self._delimiter), 1)
             try:
                 self._add_request()
             except RequestError:
@@ -49,15 +55,14 @@ class Request:
             
 
     def _add_request(self):
-        delimiter = bytes("\r\n", "utf-8")
         try:
-            if self._buffer.startswith(delimiter):
-                self._buffer.replace(delimiter, "", 1)
+            if self._buffer.startswith(self._delimiter):
+                self._buffer.replace(self._delimiter, "", 1)
 
-            raw_start_line, raw_header = self._buffer.split(delimiter, 1)
+            raw_start_line, raw_header = self._buffer.split(self._delimiter, 1)
             self._add_start_line(raw_start_line.decode("utf-8"))
             self._add_header(raw_header.decode("utf-8"))
-            self._buffer = None   
+            self._buffer = None
         except:
             raise RequestError
 
@@ -85,22 +90,26 @@ class Request:
         except:
             raise RequestError
 
+    def _buffer_limit(self):
+        if sys.getsizeof(self._buffer) > self._size_limit:
+            raise TooLargeError
+
     def assemble(self):
         if not self._no_ending:
             return
         if self._buffer.endswith(bytes("\r\n", "utf-8")):
             self._add_request()
+        if self._buffer == None and self._no_ending:
+            raise ConnectionTimeOut
         raise RequestError
 
-    def append_body(self, data: bytes):
+    def _append_body(self, data: bytes):
         if not data:
             return
         self._body += data
 
     def is_complete(self):
-        if self._no_ending:
-            return False
-        return True
+        return not self._no_ending
 
     def method(self) -> str:
         return self._method
